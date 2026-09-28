@@ -34,8 +34,9 @@ class TaskStore:
             return int(cursor.lastrowid)
 
     def list(self, search: str = "", show_done: bool = True) -> list[Task]:
-        query = "SELECT id, title, priority, done FROM tasks WHERE title LIKE ?"
-        params: list[object] = [f"%{search.strip()}%"]
+        query = "SELECT id, title, priority, done FROM tasks WHERE title LIKE ? ESCAPE '!'"
+        literal = search.strip().replace("!", "!!").replace("%", "!%").replace("_", "!_")
+        params: list[object] = [f"%{literal}%"]
         if not show_done:
             query += " AND done = 0"
         query += " ORDER BY done, CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END, id DESC"
